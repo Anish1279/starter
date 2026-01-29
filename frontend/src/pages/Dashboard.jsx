@@ -12,7 +12,9 @@ function Dashboard({ user }) {
 
     const fetchDashboardData = async () => {
         try {
-            const endpoint = user.id === 1 ? '/dashboard/stats' : '/dashboard/employee';
+            // Bug Fix: Changed from hardcoded user.id === 1 to check user.role
+            // This ensures managers are correctly identified regardless of their user ID
+            const endpoint = user.role === 'manager' ? '/dashboard/stats' : '/dashboard/employee';
             const response = await api.get(endpoint);
             
             if (response.data.success) {

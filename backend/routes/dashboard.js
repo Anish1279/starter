@@ -72,12 +72,12 @@ router.get('/employee', authenticateToken, async (req, res) => {
             [req.user.id]
         );
 
-        // Get this week's stats
+        // Bug Fix: Changed MySQL-specific DATE_SUB and NOW() to SQLite-compatible datetime functions
         const [weekStats] = await pool.execute(
             `SELECT COUNT(*) as total_checkins,
                     COUNT(DISTINCT client_id) as unique_clients
              FROM checkins
-             WHERE employee_id = ? AND checkin_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)`,
+             WHERE employee_id = ? AND checkin_time >= datetime('now', '-7 days')`,
             [req.user.id]
         );
 
