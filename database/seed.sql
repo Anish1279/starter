@@ -15,7 +15,6 @@ INSERT INTO clients (name, address, latitude, longitude) VALUES
 ('Tech Solutions', 'DLF Phase 3, Gurugram', 28.4947, 77.0952),
 ('Global Services', 'Udyog Vihar, Gurugram', 28.5011, 77.0838),
 ('Innovate Inc', 'Sector 18, Noida', 28.5707, 77.3219);
-
 -- Assign employees to clients
 INSERT INTO employee_clients (employee_id, client_id, assigned_date) VALUES
 (2, 1, '2024-01-01'),

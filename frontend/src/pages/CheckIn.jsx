@@ -11,11 +11,53 @@ function CheckIn({ user }) {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [currentDistance, setCurrentDistance] = useState(null);
+    const [distanceWarning, setDistanceWarning] = useState(null);
 
     useEffect(() => {
         fetchData();
         getCurrentLocation();
     }, []);
+
+    // Feature A: Calculate distance between two coordinates using Haversine formula
+    const calculateDistance = (lat1, lon1, lat2, lon2) => {
+        const R = 6371; // Earth's radius in kilometers
+        const dLat = (lat2 - lat1) * (Math.PI / 180);
+        const dLon = (lon2 - lon1) * (Math.PI / 180);
+        const a = 
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Distance in kilometers
+    };
+
+    // Feature A: Update distance when client or location changes
+    useEffect(() => {
+        if (selectedClient && location) {
+            const client = clients.find(c => c.id === parseInt(selectedClient));
+            if (client && client.latitude && client.longitude) {
+                const distance = calculateDistance(
+                    location.latitude,
+                    location.longitude,
+                    parseFloat(client.latitude),
+                    parseFloat(client.longitude)
+                );
+                const roundedDistance = Math.round(distance * 100) / 100;
+                setCurrentDistance(roundedDistance);
+                
+                // Show warning if distance > 500 meters (0.5 km)
+                if (roundedDistance > 0.5) {
+                    setDistanceWarning('You are far from the client location');
+                } else {
+                    setDistanceWarning(null);
+                }
+            }
+        } else {
+            setCurrentDistance(null);
+            setDistanceWarning(null);
+        }
+    }, [selectedClient, location, clients]);
 
     const fetchData = async () => {
         try {
@@ -56,6 +98,8 @@ function CheckIn({ user }) {
     };
 
     const handleCheckIn = async (e) => {
+        // Bug Fix: Added preventDefault() to stop form from causing page reload
+        e.preventDefault();
         setError('');
         setSuccess('');
         setSubmitting(true);
@@ -184,6 +228,25 @@ function CheckIn({ user }) {
                                 ))}
                             </select>
                         </div>
+
+                        {/* Feature A: Display current distance from selected client */}
+                        {currentDistance !== null && (
+                            <div className={`mb-4 p-4 rounded-md ${distanceWarning ? 'bg-yellow-50 border border-yellow-200' : 'bg-green-50 border border-green-200'}`}>
+                                <div className="flex items-center justify-between">
+                                    <span className={`text-sm font-medium ${distanceWarning ? 'text-yellow-800' : 'text-green-800'}`}>
+                                        Distance from client:
+                                    </span>
+                                    <span className={`text-lg font-bold ${distanceWarning ? 'text-yellow-700' : 'text-green-700'}`}>
+                                        {currentDistance} km
+                                    </span>
+                                </div>
+                                {distanceWarning && (
+                                    <p className="text-sm text-yellow-700 mt-2">
+                                        {distanceWarning}
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         <div className="mb-4">
                             <label className="block text-gray-700 text-sm font-medium mb-2">

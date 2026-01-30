@@ -5,20 +5,28 @@ function Counter({ initialValue = 0, showDouble = true }) {
     const [isRunning, setIsRunning] = useState(false);
     const countRef = useRef(count);
 
+    // Bug Fix: Keep ref in sync with count state
+    useEffect(() => {
+        countRef.current = count;
+    }, [count]);
+
     useEffect(() => {
         if (isRunning) {
             const interval = setInterval(() => {
-                setCount(count + 1);
+                // Bug Fix: Use functional update to avoid stale closure issue
+                setCount(prevCount => prevCount + 1);
             }, 1000);
             return () => clearInterval(interval);
         }
     }, [isRunning]);
 
-    if (showDouble) {
-        useEffect(() => {
+    // Bug Fix: Hooks cannot be called conditionally (violates Rules of Hooks)
+    // Moved useEffect outside conditional and put the condition inside
+    useEffect(() => {
+        if (showDouble) {
             console.log('Double value:', count * 2);
-        }, [count]);
-    }
+        }
+    }, [count, showDouble]);
 
     const logCount = () => {
         console.log('Count from ref:', countRef.current);

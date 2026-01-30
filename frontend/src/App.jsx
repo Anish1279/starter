@@ -1,9 +1,11 @@
+// src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import CheckIn from './pages/CheckIn';
 import History from './pages/History';
+import ManagerDashboard from './pages/ManagerDashboard';
 import Layout from './components/Layout';
 
 function App() {
@@ -11,7 +13,6 @@ function App() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for existing token on mount
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
         
@@ -60,6 +61,8 @@ function App() {
                     <Route path="dashboard" element={<Dashboard user={user} />} />
                     <Route path="checkin" element={<CheckIn user={user} />} />
                     <Route path="history" element={<History user={user} />} />
+                    {/* Manager-only route */}
+                    <Route path="dashboard/manager" element={<ManagerDashboard user={user} />} />
                 </Route>
             </Routes>
         </BrowserRouter>

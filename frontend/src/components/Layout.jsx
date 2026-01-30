@@ -3,11 +3,25 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 function Layout({ user, onLogout }) {
     const location = useLocation();
 
-    const navItems = [
+    const baseNav = [
         { path: '/dashboard', label: 'Dashboard' },
         { path: '/checkin', label: 'Check In' },
         { path: '/history', label: 'History' }
     ];
+
+    // Add manager nav item only for users with manager role
+    const navItems = [...baseNav];
+    if (user && user.role === 'manager') {
+        navItems.push({ path: '/dashboard/manager', label: 'Manager' });
+    }
+
+    // Active logic: treat /dashboard as exact match, other items use startsWith
+    const isActive = (path) => {
+        if (path === '/dashboard') {
+            return location.pathname === '/dashboard';
+        }
+        return location.pathname.startsWith(path);
+    };
 
     return (
         <div className="min-h-screen bg-gray-100">
@@ -22,10 +36,11 @@ function Layout({ user, onLogout }) {
                                     key={item.path}
                                     to={item.path}
                                     className={`px-3 py-2 rounded-md text-sm font-medium ${
-                                        location.pathname === item.path
+                                        isActive(item.path)
                                             ? 'bg-blue-100 text-blue-700'
                                             : 'text-gray-600 hover:bg-gray-100'
                                     }`}
+                                    aria-current={isActive(item.path) ? 'page' : undefined}
                                 >
                                     {item.label}
                                 </Link>
@@ -34,7 +49,7 @@ function Layout({ user, onLogout }) {
                     </div>
                     <div className="flex items-center space-x-4">
                         <span className="text-sm text-gray-600">
-                            {user.name} ({user.role})
+                            {user?.name ?? 'Guest'} {user?.role ? `(${user.role})` : null}
                         </span>
                         <button
                             onClick={onLogout}
